@@ -1,10 +1,11 @@
 package de.crystalldev;
 
-import de.crystalldev.util.Utility;
+import de.crystalldev.Util.Settings;
+import de.crystalldev.Util.Utility;
 import javafx.util.Pair;
 import lombok.Getter;
 import lombok.Setter;
-import de.crystalldev.models.*;
+import de.crystalldev.Models.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -61,9 +62,9 @@ public class BrowserManager {
                 System.out.println("Not signed in? Signing in again.");
                 Utility.sleep(60000);
 
-                this.loginLobby(Utility.eMail, Utility.password);
+                this.loginLobby(Settings.eMail, Settings.password);
                 Utility.sleep(5000);
-                this.loginUniverse(Utility.server, Utility.userName);
+                this.loginUniverse(Settings.server, Settings.userName);
                 Utility.sleep(5000);
             }
             System.out.println("Relogged. Retrying.");
@@ -142,8 +143,8 @@ public class BrowserManager {
                     printCookies();
                     Utility.sleep(5000);
 
-                    Utility.serverAddress = Utility.regexString(driver.getCurrentUrl(), "https:\\/\\/s\\d+\\-.+\\.ogame\\.gameforge\\.com");
-                    System.out.println("Setting Server URL to " + Utility.serverAddress);
+                    Settings.serverAddress = Utility.regexString(driver.getCurrentUrl(), "https:\\/\\/s\\d+\\-.+\\.ogame\\.gameforge\\.com");
+                    System.out.println("Setting Server URL to " + Settings.serverAddress);
 
                 }
                 i++;
@@ -161,14 +162,14 @@ public class BrowserManager {
      * @param planetId
      */
     public void scanGalaxy(int galaxy, int lower, int upper, String planetId) {
-
         deleteAllEspionageMessages();
         Utility.sleep(1000);
 
         for (int i = galaxy; i <= galaxy; i++) {
             for (int j = lower; j <= upper; j++) {
                 try {
-                    getUrl(Utility.serverAddress + "/game/index.php?page=galaxy&cp=" + planetId + "&galaxy=" + i + "&system=" + j);
+                    getUrl(Settings.serverAddress + "/game/index.php?page=galaxy&cp=" + planetId + "&galaxy=" + i + "&system=" + j);
+
                     for (int k = 1; k <= 15; k++) {
                         try {
                             WebElement galaxyPlayerRow = driver.findElement(By.xpath("//*[@id=\"galaxytable\"]/tbody/tr[" + k + "]/td[6]/a/span"));
@@ -184,9 +185,9 @@ public class BrowserManager {
                                 boolean fleetSlotsFull = slotsUsedSpanHelper[0].equals(slotsUsedSpanHelper[1]);
 
                                 while (fleetSlotsFull) {
+                                    System.out.println("All de.crystalldev.Models.Fleet Slots are FULL waiting 17-27 seconds");
                                     Utility.sleep(15000);
-                                    System.out.println("All de.crystalldev.models.Fleet Slots are FULL waiting 17-27 seconds");
-                                    getUrl(Utility.serverAddress + "/game/index.php?page=galaxy&cp=" + planetId + "&galaxy=" + i + "&system=" + j);
+                                    getUrl(Settings.serverAddress + "/game/index.php?page=galaxy&cp=" + planetId + "&galaxy=" + i + "&system=" + j);
                                     slotsUsedSpan = driver.findElement(By.xpath("//*[@id=\"slotValue\"]"));
                                     slotsUsedSpanHelper = slotsUsedSpan.getText().trim().split("/");
                                     Utility.sleep(100);
@@ -194,6 +195,21 @@ public class BrowserManager {
                                     fleetSlotsFull = slotsUsedSpanHelper[0].equals(slotsUsedSpanHelper[1]);
                                     Utility.sleep(100);
                                 }
+
+                                WebElement spyCountElement = driver.findElement(By.xpath("//*[@id=\"probeValue\"]"));
+                                if (spyCountElement != null) {
+                                    int spyCount = Integer.parseInt(spyCountElement.getText());
+                                    while (spyCount <= Settings.PROBES_PER_SPY) {
+                                        System.out.println("There are no free probes. Waiting 17-27 seconds");
+                                        Utility.sleep(15000);
+                                        getUrl(Settings.serverAddress + "/game/index.php?page=galaxy&cp=" + planetId + "&galaxy=" + i + "&system=" + j);
+                                        spyCountElement = driver.findElement(By.xpath("//*[@id=\"slotValue\"]"));
+                                        Utility.sleep(100);
+                                        spyCount = Integer.parseInt(spyCountElement.getText());
+                                        Utility.sleep(100);
+                                    }
+                                }
+
                                 WebElement planetEspionageButton = driver.findElement(By.xpath("//*[@id=\"galaxytable\"]/tbody/tr[" + k + "]/td[8]/span/a[1]/span"));
                                 System.out.println("Spying [" + i + ":" + j + ":" + k + "] " + galaxyPlayerRow.getText() + " " + playerStatus.getText());
                                 clickElement(planetEspionageButton);
@@ -209,7 +225,7 @@ public class BrowserManager {
                     System.out.println("Issue finding Galaxy/Solarsystem Textfields");
                     System.out.println("Waiting 15 to 22 seconds before reattempting");
                     Utility.sleep(10000);
-                    getUrl(Utility.serverAddress + "/game/index.php?page=galaxy&cp=" + planetId + "&galaxy=" + i + "&system=" + j);
+                    getUrl(Settings.serverAddress + "/game/index.php?page=galaxy&cp=" + planetId + "&galaxy=" + i + "&system=" + j);
                     j--;
                     Utility.sleep(3000);
                 }
@@ -220,7 +236,7 @@ public class BrowserManager {
     public void deleteAllEspionageMessages() {
         try {
             Utility.sleep(1000);
-            getUrl(Utility.serverAddress + "/game/index.php?page=messages");
+            getUrl(Settings.serverAddress + "/game/index.php?page=messages");
             WebElement deleteAllButton = driver.findElement(By.xpath("//*[@id=\"subtabs-nfFleetTrash\"]/div/span[2]/span"));
             clickElement(deleteAllButton);
             Utility.sleep(3000);
@@ -237,7 +253,7 @@ public class BrowserManager {
         while (!taskFinished) {
             try {
                 Utility.sleep(1000);
-                getUrl(Utility.serverAddress + "/game/index.php?page=messages");
+                getUrl(Settings.serverAddress + "/game/index.php?page=messages");
 
                 WebElement amountPages = driver.findElement(By.xpath("//*[@id=\"fleetsgenericpage\"]/ul/ul[1]/li[3]"));
                 System.out.println(amountPages.getText());
@@ -304,14 +320,14 @@ public class BrowserManager {
                 }
                 System.out.println("Parsing messages finished.");
                 taskFinished = true;
-                spyReportContainer.save(Utility.ESPIONAGEFILE);
+                spyReportContainer.save(Settings.ESPIONAGEFILE);
                 System.out.println("Saving Spyreports to Object File");
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Issue getting the Messages Count Page");
                 System.out.println("Waiting 15 to 22 seconds before reattempting");
                 Utility.sleep(10000);
-                getUrl(Utility.serverAddress + "/game/index.php?page=messages");
+                getUrl(Settings.serverAddress + "/game/index.php?page=messages");
                 Utility.sleep(3000);
             }
         }
@@ -320,15 +336,15 @@ public class BrowserManager {
     public ArrayList<PlayerPlanet> getAccountPlanets() throws NoSuchElementException {
         ArrayList<PlayerPlanet> planets = new ArrayList<>();
         Utility.sleep(1000);
-        getUrl(Utility.serverAddress + "/game/index.php?page=overview");
+        getUrl(Settings.serverAddress + "/game/index.php?page=overview");
 
         //iterating through all planets+moons and create objects
         List<WebElement> obj = driver.findElements(By.xpath("//*[contains(@id, 'planet-')]/a[1]"));
 
         for (int i = 0; i < obj.size(); i++) {
-            Utility.sleep(3000);
+            Utility.sleep(200);
             clickElement(obj.get(i));
-            Utility.sleep(1500);
+            Utility.sleep(1000);
             obj.clear();
             obj = driver.findElements(By.xpath("//*[contains(@id, 'planet-')]/a[1]"));
             String url = driver.getCurrentUrl();
@@ -338,13 +354,13 @@ public class BrowserManager {
                     obj.get(i).getText(), helper[1]
             );
             planets.add(planet);
-            System.out.println(planet.getCoordinates());
+            System.out.println(planet.getName());
         }
         System.out.println("Planet scanning done");
         obj = driver.findElements(By.className("icon-moon"));
 
         for (int i = 0; i < obj.size(); i++) {
-            Utility.sleep(3000);
+            Utility.sleep(200);
             clickElement(obj.get(i));
             Utility.sleep(1500);
             obj.clear();
@@ -368,7 +384,7 @@ public class BrowserManager {
 
     public void sendFleet(Fleet fleet) {
         System.out.println("Sending Fleet");
-        driver.get(Utility.serverAddress + "/game/index.php?page=fleet1&cp=" + fleet.getOrigin());
+        driver.get(Settings.serverAddress + "/game/index.php?page=fleet1&cp=" + fleet.getOrigin());
         Utility.sleep(2000);
         fleet.getShips(driver);
         Utility.sleep(750);
@@ -398,13 +414,13 @@ public class BrowserManager {
         Utility.sleep(750);
         speedButton.click();
         Utility.sleep(500);
-        if (fleet.getTarget().getPlanetType() == Coordinates.PLANET_TYPE) {
+        if (fleet.getTarget().getPlanetType() == Coordinates.PlanetType.PLANET) {
             WebElement selectPlanet = driver.findElement(By.xpath("//*[@id=\"pbutton\"]"));
             selectPlanet.click();
-        } else if (fleet.getTarget().getPlanetType() == Coordinates.MOON_TYPE) {
+        } else if (fleet.getTarget().getPlanetType() == Coordinates.PlanetType.MOON) {
             WebElement selectPlanet = driver.findElement(By.xpath("//*[@id=\"mbutton\"]"));
             selectPlanet.click();
-        } else if (fleet.getTarget().getPlanetType() == Coordinates.DEBRIS_TYPE) {
+        } else if (fleet.getTarget().getPlanetType() == Coordinates.PlanetType.DEBRIS) {
             WebElement selectPlanet = driver.findElement(By.xpath("//*[@id=\"dbutton\"]"));
             selectPlanet.click();
         }
@@ -443,7 +459,7 @@ public class BrowserManager {
 
     public void sendFleetInactiveFast(Fleet fleet) {
         Coordinates target = fleet.getTarget();
-        getUrl(Utility.serverAddress + "/game/index.php?page=fleet1&galaxy=" + target.getGalaxy() + "&system=" + target.getSystem() + "&position=" + target.getPlanet() + "&type=1&mission=" + fleet.getMission() + "&cp=" + fleet.getOrigin());
+        getUrl(Settings.serverAddress + "/game/index.php?page=fleet1&galaxy=" + target.getGalaxy() + "&system=" + target.getSystem() + "&position=" + target.getPlanet() + "&type=1&mission=" + fleet.getMission() + "&cp=" + fleet.getOrigin());
 
         try {
             WebElement playerStatusSpan = driver.findElement(By.xpath("//*[@id=\"fleetStatusBar\"]/ul/li[3]/span[2]"));
@@ -469,10 +485,10 @@ public class BrowserManager {
         boolean fleetSlotsFull = slotsInUse >= (maxSlots);
 
         while (fleetSlotsFull) {
-            System.out.println("All de.crystalldev.models.Fleet Slots are FULL waiting 17-27 seconds");
+            System.out.println("All de.crystalldev.Models.Fleet Slots are FULL waiting 17-27 seconds");
             Utility.sleep(15000);
 
-            getUrl(Utility.serverAddress + "/game/index.php?page=fleet1&galaxy=" + target.getGalaxy() + "&system=" + target.getSystem() + "&position=" + target.getPlanet() + "&type=1&mission=" + fleet.getMission() + "&cp=" + fleet.getOrigin());
+            getUrl(Settings.serverAddress + "/game/index.php?page=fleet1&galaxy=" + target.getGalaxy() + "&system=" + target.getSystem() + "&position=" + target.getPlanet() + "&type=1&mission=" + fleet.getMission() + "&cp=" + fleet.getOrigin());
             slotsUsedSpan = driver.findElement(By.xpath("//*[@id=\"slots\"]/div[1]/span"));
             slotsUsedSpanHelper = slotsUsedSpan.getText().replace("Flotten", "").replace(":", "").trim().split("/");
 
@@ -482,19 +498,19 @@ public class BrowserManager {
             maxSlots = Integer.parseInt(slotsUsedSpanHelper[1]);
             fleetSlotsFull = slotsInUse >= (maxSlots);
         }
-        while (fleet.getShips(driver)) {
-            System.out.println("No de.crystalldev.models.Ships available. Waiting 20-30 seconds");
-            Utility.sleep(20000);
-            getUrl(Utility.serverAddress + "/game/index.php?page=fleet1&galaxy=" + target.getGalaxy() + "&system=" + target.getSystem() + "&position=" + target.getPlanet() + "&type=1&mission=" + fleet.getMission() + "&cp=" + fleet.getOrigin());
-        }
 
+        while (fleet.getShips(driver)) {
+            System.out.println("No de.crystalldev.Models.Ships available. Waiting 20-30 seconds");
+            Utility.sleep(20000);
+            getUrl(Settings.serverAddress + "/game/index.php?page=fleet1&galaxy=" + target.getGalaxy() + "&system=" + target.getSystem() + "&position=" + target.getPlanet() + "&type=1&mission=" + fleet.getMission() + "&cp=" + fleet.getOrigin());
+        }
 
         Utility.sleep(750);
         WebElement fleet1ContinueButton = driver.findElement(By.xpath("//*[@id=\"continue\"]"));
         clickElement(fleet1ContinueButton);
         Utility.sleep(1200);
 
-        if (!driver.getCurrentUrl().equals(Utility.serverAddress + "/game/index.php?page=fleet2")) {
+        if (!driver.getCurrentUrl().equals(Settings.serverAddress + "/game/index.php?page=fleet2")) {
             System.out.println("Not page 2 yet. Clicking again");
             clickElement(fleet1ContinueButton);
         }
@@ -506,10 +522,9 @@ public class BrowserManager {
         speedButton.click();
         Utility.sleep(250);
         clickElement(fleet2ContinueButton);
-
-
         Utility.sleep(2500);
-        if (!driver.getCurrentUrl().equals(Utility.serverAddress + "/game/index.php?page=fleet3")) {
+
+        if (!driver.getCurrentUrl().equals(Settings.serverAddress + "/game/index.php?page=fleet3")) {
             System.out.println("Not page 3 yet. Clicking again");
             clickElement(fleet2ContinueButton);
             Utility.sleep(2500);
@@ -519,15 +534,15 @@ public class BrowserManager {
         WebElement sendFleetButton = driver.findElement(By.xpath("//*[@id=\"start\"]/span"));
 
         if (missionButton.getAttribute("class").equals("off")) {
-            System.out.println("Send de.crystalldev.models.Fleet Failure");
+            System.out.println("Send de.crystalldev.Models.Fleet Failure");
             return;
         }
 
         clickElement(sendFleetButton);
         Utility.sleep(2000);
 
-        if (driver.getCurrentUrl().equals(Utility.serverAddress + "/game/index.php?page=fleet1")) {
-            System.out.println("Send de.crystalldev.models.Fleet Success");
+        if (driver.getCurrentUrl().equals(Settings.serverAddress + "/game/index.php?page=fleet1")) {
+            System.out.println("Send de.crystalldev.Models.Fleet Success");
         } else {
             Utility.sleep(1000);
             System.out.println("Clicking again!");
@@ -535,7 +550,6 @@ public class BrowserManager {
         }
         Utility.sleep(1000);
     }
-
 
     public void espionageFarming(String origin) {
         Fleet fleet;
@@ -591,21 +605,17 @@ public class BrowserManager {
         }
     }
 
-    /**
-     * @return
-     */
     private String checkAttack() {
         //tooltip eventToggle noAttack for no attack
         //tooltip eventToggle soon for attack
         WebElement attackAlert = driver.findElement(By.xpath("//*[@id=\"attack_alert\"]"));
         if (attackAlert.getAttribute("class").equals("tooltip eventToggle noAttack")) {
-            Utility.actionsSinceAttackDetected = 0;
+            Settings.actionsSinceAttackDetected = 0;
             System.out.println("No Attack detected");
             return null;
         }
 
         List<WebElement> obj = driver.findElements(By.xpath("//*[contains(@id, 'eventRow-')]"));
-
 
         for (WebElement tmp : obj) {
             String[] idHelper = tmp.getAttribute("id").trim().split("-");
@@ -625,41 +635,40 @@ public class BrowserManager {
                 WebElement tooltip2 = driver.findElement(By.xpath("//*[@id=\"eventRow-" + fleetId + "\"]/td[7]/span"));
                 System.out.println(tooltip2.getText());
 
-                Utility.actionsSinceAttackDetected++;
-                System.out.println("Actions since attack was detected: " + Utility.actionsSinceAttackDetected);
-                if (Utility.actionsSinceAttackDetected >= 3 && Utility.actionsSinceAttackDetected <= 6) {
+                Settings.actionsSinceAttackDetected++;
+                System.out.println("Actions since attack was detected: " + Settings.actionsSinceAttackDetected);
+                if (Settings.actionsSinceAttackDetected >= 3 && Settings.actionsSinceAttackDetected <= 6) {
 //                    messageMyselfOnDiscord(fleetId);
                 }
-                if (Utility.actionsSinceAttackDetected == 7) {
+                if (Settings.actionsSinceAttackDetected == 7) {
                     try {
                         messageAttacker(fleetId);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-                if (Utility.actionsSinceAttackDetected > 7) {
+                if (Settings.actionsSinceAttackDetected > 7) {
                     saveFleet();
                 }
                 return fleetId;
             }
-
         }
 
         //this only happens if its an aks
 
         attackAlert = driver.findElement(By.xpath("//*[@id=\"attack_alert\"]"));
         if (attackAlert.getAttribute("class").equals("tooltip eventToggle soon")) {
-            Utility.actionsSinceAttackDetected++;
-            System.out.println("Actions since attack was detected: " + Utility.actionsSinceAttackDetected);
-            if (Utility.actionsSinceAttackDetected >= 3 && Utility.actionsSinceAttackDetected <= 7) {
+            Settings.actionsSinceAttackDetected++;
+            System.out.println("Actions since attack was detected: " + Settings.actionsSinceAttackDetected);
+            if (Settings.actionsSinceAttackDetected >= 3 && Settings.actionsSinceAttackDetected <= 7) {
 //                messageMyselfOnDiscord(null);
             }
-            if (Utility.actionsSinceAttackDetected > 7) {
+            if (Settings.actionsSinceAttackDetected > 7) {
                 saveFleet();
             }
             return null;
         }
-        Utility.actionsSinceAttackDetected = 0;
+        Settings.actionsSinceAttackDetected = 0;
         return null;
     }
 
@@ -667,7 +676,7 @@ public class BrowserManager {
         List<String> givenList = Arrays.asList("Hi", "Hi was geht", "Hi bin online.", "Na du?");
         Random rand = new Random();
         String randomElement = givenList.get(rand.nextInt(givenList.size()));
-        driver.get(Utility.serverAddress + "/game/index.php?page=overview");
+        driver.get(Settings.serverAddress + "/game/index.php?page=overview");
         Utility.sleep(1000);
 
         try {
@@ -692,7 +701,7 @@ public class BrowserManager {
             Utility.sleep(1000);
 
         } catch (Exception e) {
-            driver.get(Utility.serverAddress + "/game/index.php?page=overview");
+            driver.get(Settings.serverAddress + "/game/index.php?page=overview");
             Utility.sleep(2000);
             WebElement chatButton = driver.findElement(By.xpath("//*[@id=\"eventRow-" + fleetId + "\"]/td[11]/a/span"));
             ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", chatButton);
@@ -718,20 +727,19 @@ public class BrowserManager {
 
     public void refresh(String planetId) {
         while (true) {
-            getUrl(Utility.serverAddress + "/game/index.php?page=overview&cp=" + planetId);
+            getUrl(Settings.serverAddress + "/game/index.php?page=overview&cp=" + planetId);
             System.out.println("Sleeping 30-45 seconds");
             Utility.sleep(30000);
 
         }
     }
 
-
     public void saveFleet() {
         WebElement metall = driver.findElement(By.xpath("//*[@id=\"resources_metal\"]"));
         WebElement crystal = driver.findElement(By.xpath("//*[@id=\"resources_crystal\"]"));
         WebElement deuterium = driver.findElement(By.xpath("//*[@id=\"resources_deuterium\"]"));
         Fleet fleet = new Fleet();
-        fleet.setOrigin(Utility.activePlanet);
+        fleet.setOrigin(Settings.activePlanet.getId());
         fleet.setTarget("[5:28:12] Moon");
         fleet.setMaxShips();
         fleet.setMission(Fleet.DEPLOYMENT_MISSION);
@@ -781,8 +789,8 @@ public class BrowserManager {
 //            temmie.sendMessage(dm);
 //            return;
 //        }
-//        driver.get(de.crystalldev.util.Utility.serverAddress + "/game/index.php?page=overview");
-//        de.crystalldev.util.Utility.sleep(1000);
+//        driver.get(de.crystalldev.Util.Utility.serverAddress + "/game/index.php?page=overview");
+//        de.crystalldev.Util.Utility.sleep(1000);
 //
 //        WebElement attackerKoords = driver.findElement(By.xpath("//*[@id=\"eventRow-" + fleetId + "\"]/td[5]"));
 //        WebElement arrivalTime = driver.findElement(By.xpath("//*[@id=\"eventRow-" + fleetId + "\"]/td[2]"));
