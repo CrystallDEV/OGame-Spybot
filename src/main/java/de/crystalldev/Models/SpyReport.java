@@ -1,4 +1,4 @@
-package de.crystalldev.models;
+package de.crystalldev.Models;
 
 import lombok.Getter;
 

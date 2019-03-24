@@ -1,6 +1,6 @@
-package de.crystalldev.models;
+package de.crystalldev.Models;
 
-import de.crystalldev.util.Utility;
+import de.crystalldev.Util.Utility;
 import javafx.util.Pair;
 import lombok.Getter;
 import lombok.Setter;
@@ -107,7 +107,7 @@ public class Fleet {
                         BATTLECRUISERTextField.sendKeys(pair.getValue() + "");
                         break;
                     default:
-                        System.out.println("Issue assigning Ship Variables @de.crystalldev.models.Fleet.java getShips(Pair... ships))");
+                        System.out.println("Issue assigning Ship Variables @de.crystalldev.Models.Fleet.java getShips(Pair... ships))");
                 }
             } catch (Exception e) {
                 hadErrors = true;

@@ -1,7 +1,8 @@
 package de.crystalldev;
 
-import de.crystalldev.models.PlayerPlanet;
-import de.crystalldev.util.Utility;
+import de.crystalldev.Models.PlayerPlanet;
+import de.crystalldev.Util.Settings;
+import de.crystalldev.Util.Utility;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -26,6 +27,8 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         window = primaryStage;
+        window.setTitle(Settings.applicationTitle);
+        window.setHeight(200);
         this.setupLoginScene();
         this.showLoginScene();
         //TODO reset all stuff on relogin
@@ -33,7 +36,7 @@ public class Main extends Application {
 
     private void setupLoginScene() {
         // Declaring variables for loginScene
-        HBox loginSceneLayout = new HBox(20);
+        HBox loginSceneLayout = new HBox(10);
         Label emailLabel = new Label("E-Mail:");
         TextField email = new TextField("");
         Label passwordLabel = new Label("Password:");
@@ -49,14 +52,15 @@ public class Main extends Application {
         loginScene = new Scene(loginSceneLayout);
 
         loginButton.setOnAction(event -> {
-            Utility.eMail = email.getText().trim();
-            Utility.password = password.getText().trim();
-            BrowserManager.getInstance().loginLobby(Utility.eMail, Utility.password);
+            Settings.eMail = email.getText().trim();
+            Settings.password = password.getText().trim();
+            BrowserManager.getInstance().loginLobby(Settings.eMail, Settings.password);
             Utility.sleep(1000);
-            Utility.server = serverTextField.getText().trim();
-            Utility.userName = ingameNameTextField.getText().trim();
-            BrowserManager.getInstance().loginUniverse(Utility.server, Utility.userName);
-            Utility.playerPlanets = BrowserManager.getInstance().getAccountPlanets();
+            Settings.server = serverTextField.getText().trim();
+            Settings.userName = ingameNameTextField.getText().trim();
+            BrowserManager.getInstance().loginUniverse(Settings.server, Settings.userName);
+            Settings.playerPlanets = BrowserManager.getInstance().getAccountPlanets();
+            Settings.activePlanet = Settings.playerPlanets.get(0);
             Utility.sleep(1000);
             this.setupMainScene();
             this.showMainScene();
@@ -65,15 +69,15 @@ public class Main extends Application {
 
     private void setupMainScene() {
         //Declaring variables for mainScene
-        HBox mainSceneLayout = new HBox(80);
+        HBox mainSceneLayout = new HBox(10);
 
-        for (PlayerPlanet planet : Utility.playerPlanets) {
+        for (PlayerPlanet planet : Settings.playerPlanets) {
             Button planetButton = new Button(planet.getCoordinates().toString());
-
             planetButton.setOnAction(event -> {
-                Utility.activePlanet = planet.getId();
+                Settings.activePlanet = planet;
                 BrowserManager.getInstance().setRunning(true);
-                new Thread(() -> BrowserManager.getInstance().refresh(planet.getId())).start();
+                new Thread(() -> BrowserManager.getInstance().espionageFarming(planet.getId())).start();
+
                 mainSceneLayout.getChildren().removeAll(buttons);
                 Button turnOff = new Button("Off");
                 Button pause = new Button("Pause");
@@ -84,78 +88,32 @@ public class Main extends Application {
                     mainSceneLayout.getChildren().addAll(buttons);
                     mainSceneLayout.getChildren().removeAll(turnOff, pause);
                 });
+
+                pause.setOnAction(event1 -> BrowserManager.getInstance().setPaused(!BrowserManager.getInstance().isPaused()));
             });
             buttons.add(planetButton);
         }
 
         Button scanGalaxyButton = new Button("Scan Galaxy");
+        scanGalaxyButton.setOnAction(event -> {
+            new Thread(() -> BrowserManager.getInstance().scanGalaxy(Settings.activePlanet.getCoordinates().getGalaxy(),
+                    Settings.LOWER_SYSTEM, Settings.UPPER_SYSTEM, Settings.activePlanet.getId())
+            ).start();
+        });
+        buttons.add(scanGalaxyButton);
+
         Button parseEspionageMessagesButton = new Button("Parse Espionage Messages");
+        parseEspionageMessagesButton.setOnAction(event -> {
+            new Thread(() -> BrowserManager.getInstance().parseEspionageMessages()).start();
+        });
+        buttons.add(parseEspionageMessagesButton);
+
         Button refresh = new Button("Refresh");
+        refresh.setOnAction(event -> {
+            new Thread(() -> BrowserManager.getInstance().refresh(Settings.activePlanet.getId())).start();
+        });
+        buttons.add(refresh);
 
-//        startFarmBotButton.setOnAction(event -> {
-//            Utility.activePlanet = "34016475";
-//            BrowserManager.getInstance().setRunning(true);
-//            new Thread(() -> new Thread(() -> {
-//                BrowserManager.getInstance().refresh("33620855");
-//            }).start()).start();
-//            mainSceneLayout.getChildren().removeAll(startFarmBotButton, startFarmBotPlani2, startFarmBotPlani3, scanGalaxyButton, parseEspionageMessagesButton);
-//            Button turnOff = new Button("Off");
-//            Button pause = new Button("Pause");
-//            mainSceneLayout.getChildren().addAll(turnOff, pause);
-//
-//            turnOff.setOnAction(event15 -> {
-//                BrowserManager.getInstance().setRunning(false);
-//                mainSceneLayout.getChildren().addAll(startFarmBotButton, startFarmBotPlani2, startFarmBotPlani3, scanGalaxyButton, parseEspionageMessagesButton);
-//                mainSceneLayout.getChildren().removeAll(turnOff, pause);
-//            });
-//        });
-//
-//        startFarmBotPlani2.setOnAction(event -> {
-//            Utility.activePlanet = "33816463";
-//            BrowserManager.getInstance().setRunning(true);
-//            new Thread(() -> new Thread(() -> {
-//                BrowserManager.getInstance().espionageFarming("33816463");
-//            }).start()).start();
-//            mainSceneLayout.getChildren().removeAll(startFarmBotButton, startFarmBotPlani2, startFarmBotPlani3, scanGalaxyButton, parseEspionageMessagesButton);
-//            Button turnOff = new Button("Off");
-//            Button pause = new Button("Pause");
-//            mainSceneLayout.getChildren().addAll(turnOff, pause);
-//
-//            turnOff.setOnAction(event14 -> {
-//                BrowserManager.getInstance().setRunning(false);
-//                mainSceneLayout.getChildren().addAll(startFarmBotButton, startFarmBotPlani2, startFarmBotPlani3, scanGalaxyButton, parseEspionageMessagesButton);
-//                mainSceneLayout.getChildren().removeAll(turnOff, pause);
-//            });
-//
-//            pause.setOnAction(event1 -> BrowserManager.getInstance().setPaused(!BrowserManager.getInstance().isPaused()));
-//
-//        });
-//
-//        startFarmBotPlani3.setOnAction(event -> {
-//            Utility.activePlanet = "33816344";
-//            BrowserManager.getInstance().setRunning(true);
-//            new Thread(() -> new Thread(() -> {
-//                BrowserManager.getInstance().espionageFarming("33816344");
-//            }).start()).start();
-//            mainSceneLayout.getChildren().removeAll(startFarmBotButton, startFarmBotPlani2, startFarmBotPlani3, scanGalaxyButton, parseEspionageMessagesButton);
-//            Button turnOff = new Button("Off");
-//            Button pause = new Button("Pause");
-//            mainSceneLayout.getChildren().addAll(turnOff, pause);
-//
-//            turnOff.setOnAction(event13 -> {
-//                BrowserManager.getInstance().setRunning(false);
-//                mainSceneLayout.getChildren().addAll(startFarmBotButton, startFarmBotPlani2, startFarmBotPlani3, scanGalaxyButton, parseEspionageMessagesButton);
-//                mainSceneLayout.getChildren().removeAll(turnOff, pause);
-//            });
-//
-//
-//            pause.setOnAction(event12 -> BrowserManager.getInstance().setPaused(!BrowserManager.getInstance().isPaused()));
-//
-//        });
-
-        scanGalaxyButton.setOnAction(event -> BrowserManager.getInstance().scanGalaxy(1, 1, 499, Utility.activePlanet));
-        parseEspionageMessagesButton.setOnAction(event -> BrowserManager.getInstance().parseEspionageMessages());
-        refresh.setOnAction(event -> BrowserManager.getInstance().refresh(Utility.activePlanet));
         mainSceneLayout.getChildren().addAll(buttons);
         mainScene = new Scene(mainSceneLayout);
     }

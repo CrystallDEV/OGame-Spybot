@@ -1,42 +1,28 @@
-package de.crystalldev.models;
+package de.crystalldev.Models;
+
+import lombok.Getter;
 
 import java.io.Serializable;
 
 public class Coordinates implements Cloneable, Serializable {
 
-    public static final int PLANET_TYPE = 1;
-    public static final int DEBRIS_TYPE = 2;
-    public static final int MOON_TYPE = 3;
     private static final long serialVersionUID = 9208573032729082194L;
 
-    private int galaxy, system, planet, planetType;
-
-    public int getGalaxy() {
-        return this.galaxy;
-    }
-
-    public int getSystem() {
-        return this.system;
-    }
-
-    public int getPlanet() {
-        return this.planet;
-    }
-
-    public int getPlanetType() {
-        return this.planetType;
-    }
+    @Getter
+    private int galaxy, system, planet;
+    @Getter
+    private PlanetType planetType;
 
     public Coordinates(String coord) {
         String helper = coord;
-        this.planetType = PLANET_TYPE;
+        this.planetType = PlanetType.PLANET;
         try {
             if (helper.contains("Moon")) {
                 helper = helper.replace("Moon", "").trim();
-                this.planetType = MOON_TYPE;
+                this.planetType = PlanetType.MOON;
             } else if (helper.contains("Debris")) {
                 helper = helper.replace("Debris", "").trim();
-                this.planetType = DEBRIS_TYPE;
+                this.planetType = PlanetType.DEBRIS;
             }
             helper = helper.replace("[", "").replace("]", "").trim();
             String[] helper2 = helper.split(":");
@@ -51,7 +37,7 @@ public class Coordinates implements Cloneable, Serializable {
     }
 
 
-    public Coordinates(int galaxy, int system, int planet, int planetType) {
+    public Coordinates(int galaxy, int system, int planet, PlanetType planetType) {
         this.galaxy = galaxy;
         this.system = system;
         this.planet = planet;
@@ -60,12 +46,13 @@ public class Coordinates implements Cloneable, Serializable {
 
     public String toString() {
         StringBuilder helper = new StringBuilder("[" + this.galaxy + ":" + this.system + ":" + this.planet + "]");
-        if (planetType == PLANET_TYPE) {
+        if (planetType == PlanetType.PLANET) {
+            helper.append(" Planet");
             return helper.toString();
-        } else if (planetType == DEBRIS_TYPE) {
+        } else if (planetType == PlanetType.DEBRIS) {
             helper.append(" Debris");
             return helper.toString();
-        } else if (planetType == MOON_TYPE) {
+        } else if (planetType == PlanetType.MOON) {
             helper.append(" Moon");
             return helper.toString();
         }
@@ -73,9 +60,8 @@ public class Coordinates implements Cloneable, Serializable {
     }
 
     public boolean isMoon() {
-        return this.planetType == MOON_TYPE;
+        return this.planetType == PlanetType.MOON;
     }
-
 
     public static boolean isCoordinates(String temp) {
         if (temp.matches("[0-9]+\\:[0-9]+\\:[0-9]") || temp.matches("[[0-9]+\\:[0-9]+\\:[0-9]]") || temp.matches("[[0-9]+\\:[0-9]+\\:[0-9]] Moon"))
@@ -94,5 +80,9 @@ public class Coordinates implements Cloneable, Serializable {
         Coordinates otherCoordinates = (Coordinates) o;
         return this.getGalaxy() == otherCoordinates.getGalaxy() && this.getSystem() == otherCoordinates.getSystem()
                 && this.getPlanet() == otherCoordinates.getPlanet() && this.getPlanetType() == otherCoordinates.getPlanetType();
+    }
+
+    public enum PlanetType {
+        PLANET, DEBRIS, MOON
     }
 }

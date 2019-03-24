@@ -1,6 +1,6 @@
-package de.crystalldev.models;
+package de.crystalldev.Models;
 
-import de.crystalldev.util.Utility;
+import de.crystalldev.Util.Settings;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ public class SpyReportContainer implements Serializable {
     private ArrayList<SpyReport> allSpyReport;
 
     private SpyReportContainer() {
-        unique = load(Utility.ESPIONAGEFILE);
+        unique = load(Settings.ESPIONAGEFILE);
         if (this.allSpyReport == null) {
             allSpyReport = new ArrayList<>();
         }
