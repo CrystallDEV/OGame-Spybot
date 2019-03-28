@@ -542,7 +542,7 @@ public class BrowserManager {
         Utility.sleep(2000);
 
         if (driver.getCurrentUrl().equals(Settings.serverAddress + "/game/index.php?page=fleet1")) {
-            System.out.println("Send de.crystalldev.Models.Fleet Success");
+            System.out.println("Sent Fleet successfully");
         } else {
             Utility.sleep(1000);
             System.out.println("Clicking again!");

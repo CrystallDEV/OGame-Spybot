@@ -19,9 +19,9 @@ public class Settings {
     public static int LOWER_SYSTEM = 1;
     public static int UPPER_SYSTEM = 499;
     public static int PROBES_PER_SPY = 50;
+    public final static String ESPIONAGEFILE = "spyreports";
 
     public static String applicationTitle = "Spy-Bot Ogame";
-    public final static String ESPIONAGEFILE = "spyreports";
     public static int actionsSinceAttackDetected = 0;
     public static ArrayList<PlayerPlanet> playerPlanets = new ArrayList<>();
     public static PlayerPlanet activePlanet;
