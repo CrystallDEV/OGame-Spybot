@@ -67,16 +67,16 @@ public class SettingsManager {
 //            }
 
             // get the property value and print it out
-            if (userName.length() > 0) {
+            if (!userName.isEmpty()) {
                 prop.setProperty("userName", userName);
             }
-            if (eMail.length() > 0) {
+            if (!eMail.isEmpty()) {
                 prop.setProperty("eMail", eMail);
             }
-            if (password.length() > 0 && savePassword) {
+            if (!password.isEmpty() && savePassword) {
                 prop.setProperty("password", password);
             }
-            if (server.length() > 0) {
+            if (!server.isEmpty()) {
                 prop.setProperty("server", server);
             }
             if (lowerSystem > 0) {
@@ -88,7 +88,7 @@ public class SettingsManager {
             if (probesPerSpy > 0) {
                 prop.setProperty("probesPerSpy", String.valueOf(probesPerSpy));
             }
-            if (espionageFile.length() > 0) {
+            if (!espionageFile.isEmpty()) {
                 prop.setProperty("espionageFile", espionageFile);
             }
             prop.store(outputStream, null);
@@ -111,14 +111,30 @@ public class SettingsManager {
             prop.load(inputStream);
 
             // get the property value and print it out
-            userName = prop.getProperty("userName");
-            eMail = prop.getProperty("eMail");
-            password = prop.getProperty("password");
-            server = prop.getProperty("server");
-            lowerSystem = prop.getProperty("lowerSystem").length() > 0 ? Integer.parseInt(prop.getProperty("lowerSystem")) : 1;
-            upperSystem = prop.getProperty("upperSystem").length() > 0 ? Integer.parseInt(prop.getProperty("upperSystem")) : 499;
-            probesPerSpy = prop.getProperty("probesPerSpy").length() > 0 ? Integer.parseInt(prop.getProperty("probesPerSpy")) : 50;
-            espionageFile = prop.getProperty("espionageFile");
+            if (prop.containsKey("userName")) {
+                userName = prop.getProperty("userName");
+            }
+            if (prop.containsKey("eMail")) {
+                eMail = prop.getProperty("eMail");
+            }
+            if (prop.containsKey("password")) {
+                password = prop.getProperty("password");
+            }
+            if (prop.containsKey("server")) {
+                server = prop.getProperty("server");
+            }
+            if (prop.containsKey("lowerSystem")) {
+                lowerSystem = Integer.parseInt(prop.getProperty("lowerSystem"));
+            }
+            if (prop.containsKey("upperSystem")) {
+                upperSystem = Integer.parseInt(prop.getProperty("upperSystem"));
+            }
+            if (prop.containsKey("probesPerSpy")) {
+                probesPerSpy = Integer.parseInt(prop.getProperty("probesPerSpy"));
+            }
+            if (prop.containsKey("espionageFile")) {
+                espionageFile = prop.getProperty("espionageFile");
+            }
 
             System.out.println("Loaded config in " + (System.currentTimeMillis() - start) + " ms");
         } catch (Exception e) {
